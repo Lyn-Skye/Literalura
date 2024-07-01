@@ -1,36 +1,20 @@
 package com.alurareto.Literalura.models;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.*;
 
-import java.util.OptionalDouble;
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-
-@Entity
-@Table (name = "autores")
 public class Autor {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long Id;
-    @Column(unique = true)
     private String nombre;
-    private int fechaDeNacimiento;
-    private int fechaDeMuerte;
-    @ManyToOne
+    private String fechaDeNacimiento;
+    private String fechaDeMuerte;
     private Libro libro;
-
-    public Autor(){    }
 
     public Autor(DatosAutor datosAutor){
         this.nombre = datosAutor.nombre();
-        this.fechaDeNacimiento = Integer.valueOf(datosAutor.fechaDeNacimiento());
-        this.fechaDeMuerte = Integer.valueOf(datosAutor.fechaDeMuerte());
+        this.fechaDeNacimiento = datosAutor.fechaDeNacimiento();
+        this.fechaDeMuerte = datosAutor.fechaDeMuerte();
     }
 
     public String toString(){
-        return "Autores: " + nombre + ", nacimiento: " + fechaDeNacimiento + ", muerte: " + fechaDeMuerte;
+        return nombre + ", año de nacimiento: " + fechaDeNacimiento + ", año de muerte: " + fechaDeMuerte;
     }
 
     public String getNombre() {
@@ -41,23 +25,27 @@ public class Autor {
         this.nombre = nombre;
     }
 
-    public int getFechaDeNacimiento() {
+    public String getFechaDeNacimiento() {
         return fechaDeNacimiento;
     }
 
-    public void setFechaDeNacimiento(int fechaDeNacimiento) {
+    public void setFechaDeNacimiento(String fechaDeNacimiento) {
         this.fechaDeNacimiento = fechaDeNacimiento;
     }
 
-    public int getFechaDeMuerte() {
+    public String getFechaDeMuerte() {
         return fechaDeMuerte;
     }
 
-    public void setFechaDeMuerte(int fechaDeMuerte) {
+    public void setFechaDeMuerte(String fechaDeMuerte) {
         this.fechaDeMuerte = fechaDeMuerte;
     }
 
+    public Libro getLibro() {
+        return libro;
+    }
 
+    public void setLibro(Libro libro) {
+        this.libro = libro;
+    }
 }
-
-
