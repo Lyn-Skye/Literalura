@@ -1,6 +1,5 @@
 package com.alurareto.Literalura.principal;
 
-import com.alurareto.Literalura.models.Autor;
 import com.alurareto.Literalura.models.DatosCrudos;
 import com.alurareto.Literalura.models.DatosLibro;
 import com.alurareto.Literalura.models.Libro;
@@ -8,10 +7,8 @@ import com.alurareto.Literalura.repository.LibroRepository;
 import com.alurareto.Literalura.services.ConsumoAPI;
 import com.alurareto.Literalura.services.ConvierteDatos;
 
-import java.net.URL;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.Scanner;
 
 public class Principal {
@@ -74,26 +71,22 @@ public class Principal {
         }
     }
 
-
-
-    private void buscarLibroWeb() {
+    private DatosCrudos getDatosCrudos() {
         System.out.println("Escribe el nombre del libro que deseas buscar");
         String libroABuscar = teclado.nextLine();
-        var json = consumoApi.obtenerDatos(URL_BASE + libroABuscar.replace(" ", "+"));
-        var datosBusqueda = conversor.obtenerDatos(json, DatosCrudos.class);
-        Optional<DatosLibro> libroBuscado = datosBusqueda.libros().stream()
-                .filter(l -> l.titulo().toUpperCase().contains(libroABuscar.toUpperCase()))
-                .findFirst();
-        if (libroBuscado.isPresent()) {
-            System.out.println("Libro encontrado");
-            System.out.println(libroBuscado.get());
-//            DatosCrudos datos = getDatosLibro();
-//            Libro libro = new Libro(datos);
-//            repositorio.save(libro);
-//            System.out.println(datos);
-        } else {
-            System.out.println("Libro no encontrado");
+        String json = consumoApi.obtenerDatos(URL_BASE + libroABuscar.replace(" ", "+"));
+        return conversor.obtenerDatos(json, DatosCrudos.class);}
+
+    private void buscarLibroWeb() {
+        DatosCrudos crudos = getDatosCrudos();
+        if (crudos ==null || crudos.resultado().isEmpty()){
+            System.out.println("Ese libro no se encuentra en Gutendex");
+        }else{
+        DatosLibro datosLibro = crudos.resultado().get(0);
+        Libro libro = new Libro(datosLibro);
+        System.out.println(libro);
         }
+        return;
     }
 
 
