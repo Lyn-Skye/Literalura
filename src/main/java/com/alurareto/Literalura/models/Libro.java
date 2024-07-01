@@ -1,37 +1,22 @@
 package com.alurareto.Literalura.models;
 
-import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.List;
 
-@Entity //Entity es para indicar que será para la base de datos
-@Table(name="libros") // para cambiarle le nombre a nivel base de Datos
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Libro {
-
-    @Id //para indicar que el número siguiente será el que almacene el ID.
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long Id;
-    @Column(unique = true)
     private String titulo;
-    @OneToMany
     private List<Autor> autores;
     private List<String> idiomas;
 
-
-    public Libro (){}
-
     public Libro(DatosLibro datosLibro){
         this.titulo = datosLibro.titulo();
-        this.autores = datosLibro.autores();
         this.idiomas = datosLibro.idiomas();
     }
 
-    public Long getId() {
-        return Id;
-    }
-
-    public void setId(Long id) {
-        Id = id;
+    public String toString() {
+        return "Titulo: " + titulo + ", Autores: " + autores + ", Lenguajes: " + idiomas +"}";
     }
 
     public String getTitulo() {
@@ -42,11 +27,12 @@ public class Libro {
         this.titulo = titulo;
     }
 
-    public List<Autor> getAutores() {
+    public List<Autor> getAutor() {
         return autores;
     }
 
     public void setAutores(List<Autor> autores) {
+        autores.forEach(a-> a.setLibro(this));
         this.autores = autores;
     }
 
@@ -58,3 +44,4 @@ public class Libro {
         this.idiomas = idiomas;
     }
 }
+
