@@ -1,15 +1,13 @@
 package com.alurareto.Literalura.principal;
 
-import com.alurareto.Literalura.models.DatosCrudos;
-import com.alurareto.Literalura.models.DatosLibro;
-import com.alurareto.Literalura.models.Libro;
+import com.alurareto.Literalura.models.*;
+import com.alurareto.Literalura.repository.AutorRepository;
 import com.alurareto.Literalura.repository.LibroRepository;
 import com.alurareto.Literalura.services.ConsumoAPI;
 import com.alurareto.Literalura.services.ConvierteDatos;
+import org.springframework.dao.DataIntegrityViolationException;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class Principal {
     private Scanner teclado = new Scanner(System.in);
@@ -17,12 +15,15 @@ public class Principal {
     private final String URL_BASE = "https://gutendex.com/books/?search=";
     private ConvierteDatos conversor = new ConvierteDatos();
     private LibroRepository repositorio;
+    private AutorRepository autorRepository;
     private List<Libro> libros;
+    private List<Autor> autores;
 
-    public Principal(LibroRepository repository) {
+
+    public Principal(LibroRepository repository, AutorRepository autorRepository) {
         this.repositorio = repository;
+        this.autorRepository = autorRepository;
     }
-
 
     public void muestraElMenu() {
         var opcion = -1;
@@ -54,11 +55,11 @@ public class Principal {
                     break;
 
                 case 4:
-                    //                ListaAutoresVivosAño();
+                    ListaAutoresVivosFecha();
                     break;
 
                 case 5:
-                    //                ListaLibrosPorIdioma();
+                    ListaLibrosPorIdioma();
                     break;
 
                 case 0:
@@ -71,38 +72,92 @@ public class Principal {
         }
     }
 
-    private DatosCrudos getDatosCrudos() {
+
+    private DatosCrudos buscaDatosCrudos() {
         System.out.println("Escribe el nombre del libro que deseas buscar");
         String libroABuscar = teclado.nextLine();
-        String json = consumoApi.obtenerDatos(URL_BASE + libroABuscar.replace(" ", "+"));
-        return conversor.obtenerDatos(json, DatosCrudos.class);}
+        var json = consumoApi.obtenerDatos(URL_BASE + libroABuscar.replace(" ", "+"));
+        return conversor.obtenerDatos(json, DatosCrudos.class);
+    }
 
+
+    // Opcion 1
     private void buscarLibroWeb() {
-        DatosCrudos crudos = getDatosCrudos();
-        if (crudos ==null || crudos.resultado().isEmpty()){
-            System.out.println("Ese libro no se encuentra en Gutendex");
-        }else{
-        DatosLibro datosLibro = crudos.resultado().get(0);
-        Libro libro = new Libro(datosLibro);
-        System.out.println(libro);
+        DatosCrudos datosCrudos = buscaDatosCrudos();
+        if (datosCrudos == null || datosCrudos.resultado().isEmpty()) {
+            System.out.println("El libro buscado no se encuentra en Gutendex.com");
+            System.out.println("\n");
+        } else {
+            DatosLibro datosLibro = datosCrudos.resultado().get(0);
+            Libro libro = new Libro(datosLibro);
+            List<Autor> autores = new ArrayList<>();
+            for (DatosAutor datosAutor : datosLibro.autores()) {
+                Autor autor = new Autor(datosAutor);
+                autor.setLibro(libro);
+                autores.add(autor);
+            }
+            libro.setAutores(autores);
+            System.out.println("Libro encontrado: " + libro);
+            try {
+                repositorio.save(libro);
+                System.out.println("El libro se ha guardado en la base de datos");
+                System.out.println("\n");
+            } catch (DataIntegrityViolationException e) {
+                System.out.println("Este libro ya existe en la base de datos");
+                System.out.println("\n");
+            }
         }
-        return;
     }
 
 
     // Opción 2
     private void listaLibrosRegistrados() {
+        System.out.println("Estos son los libros almacenados");
         libros = repositorio.findAll();
-        libros.stream()
-                .sorted(Comparator.comparing(Libro::getTitulo))
-                .forEach(System.out::println);
+        libros.forEach(System.out::println);
+        System.out.println("\n");
     }
+
 
     // Opción 3
     private void ListaAutoresRegistrados() {
-        libros = repositorio.findAll();
-        libros.stream()
-                .sorted(Comparator.comparing(Libro::getTitulo));
- }
+        System.out.println("Estos son los autores almacenados");
+        autores = autorRepository.findAll();
+        autores.forEach(System.out::println);
+        System.out.println("\n");
+    }
 
+
+    //Opción 4
+    private void ListaAutoresVivosFecha() {
+        System.out.println("Indica el año en el que quieres revisar que autores estaban vivos: ");
+        String fecha = teclado.nextLine();
+        autores = autorRepository.autoresVivos(fecha);
+        if (autores.isEmpty()) {
+            System.out.println("No se encontraron autores vivos en el año" + fecha + " en el registro");
+        } else {
+            System.out.println("Autores vivos en el año: " + fecha);
+            autores.forEach(System.out::println);
+            System.out.println("\n");
+        }
+    }
+
+
+    // Opción 5
+    private void ListaLibrosPorIdioma() {
+        System.out.println("Escribe la clave de dos caracteres del idioma en el formato ISO 639-1:2002 para los idiomas. ");
+        System.out.println("Ejemplo: Inglés= en, Español= es, Francés= fr, Italiano= it, etc");
+        String idioma = teclado.nextLine();
+        try {
+            libros = repositorio.findByIdiomas(idioma);
+
+            if (libros == null) {
+                System.out.println("No se encuentran libros en ese idioma en la base de datos");
+            } else {
+                libros.forEach(System.out::println);
+            }
+        }catch (Exception e){
+            System.out.println("Error en la busqueda");
+        }
+    }
 }
