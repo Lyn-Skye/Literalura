@@ -4,7 +4,7 @@
 ![](https://cdn.pixabay.com/photo/2023/01/15/16/20/library-7720589_1280.jpg)
 
 ![](https://img.shields.io/badge/Estado-Terminado-green) ![](https://img.shields.io/badge/JAVA_JDK-v17.0-blue) ![](https://img.shields.io/badge/IDE-IntelliJ%20Idea-blue) ![](https://img.shields.io/badge/Project-Maven-blue)
-![](https://img.shields.io/github/stars/pandao/editor.md.svg)  
+
 
 
 ### Pequeño que proyecto complementario a los cursos de Alura. Obtiene datos de libros de Gutendex.com y los almancena en una base de datos local. 
